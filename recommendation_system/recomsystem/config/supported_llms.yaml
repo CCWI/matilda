@@ -1,0 +1,87 @@
+LLMs:
+# OpenAI
+# https://platform.openai.com/docs/models
+  GPT_4O:
+    model: "gpt-4o-2024-11-20"
+    input_price: 2.5
+    output_price: 10
+    functions: "openai"
+    available_region: null
+    input_limit: 128_000
+    output_limit: 16_384
+
+  GPT_4O_MINI:
+    model: "gpt-4o-mini-2024-07-18"
+    input_price: 0.15
+    output_price: 0.6
+    functions: "openai"
+    available_region: null
+    input_limit: 128_000
+    output_limit: 16_384
+  
+  GPT_O1:
+    model: "o1-2024-12-17"
+    input_price: 15
+    output_price: 60
+    functions: "openai"
+    available_region: null
+    input_limit: 200_000
+    output_limit: 100_000
+
+# Google
+# https://ai.google.dev/gemini-api/docs/models/gemini
+  GEMINI_2_5_PRO:
+    model: "gemini-2.5-pro"
+    input_price: 1.25  # https://ai.google.dev/gemini-api/docs/pricing
+    output_price: 10
+    functions: "google"
+    available_region: "europe-west4"
+    input_limit: 1_048_576
+    output_limit: 65_535
+
+  GEMINI_2_5_FLASH:
+    model: "gemini-2.5-flash"
+    input_price: 0.3
+    output_price: 2.5
+    functions: "google"
+    available_region: "europe-west4"
+    input_limit: 1_048_576
+    output_limit: 65_535
+
+# Anthropic
+# https://docs.anthropic.com/en/docs/about-claude/models
+  CLAUDE_4_SONNET:
+    model: "claude-sonnet-4@20250514"
+    input_price: 3
+    output_price: 15
+    functions: "anthropic"
+    available_region: "europe-west1"
+    input_limit: 200_000
+    output_limit: 64_000
+  
+  CLAUDE_3_7_SONNET:
+    model: "claude-3-7-sonnet@20250219"
+    input_price: 3
+    output_price: 15
+    functions: "anthropic"
+    available_region: "europe-west1"
+    input_limit: 200_000
+    output_limit: 64_000
+
+  CLAUDE_3_5_HAIKU:
+    model: "claude-3-5-haiku@20241022"
+    input_price: 0.8
+    output_price: 4
+    functions: "anthropic"
+    available_region: "us-east5"
+    input_limit: 200_000
+    output_limit: 8_192
+
+  MISTRAL_SMALL:
+    model: "mistral-small-2503@001"
+    input_price: 0.095365
+    output_price: 0.286095
+    functions: "mistral"
+    available_region: "europe-west4"
+    input_limit: 128_000
+    output_limit: 8_192

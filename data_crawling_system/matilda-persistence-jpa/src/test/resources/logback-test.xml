@@ -1,0 +1,22 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{ISO8601} [%-10.10thread] %highlight(%-5p) %-46.46class{46} | %4.4line{4}: %m%n</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="org.springframework">
+        <level value="INFO"/>
+    </logger>
+    <logger name="org.hibernate">
+        <level value="INFO"/>
+    </logger>
+    <logger name="com.zaxxer.hikari">
+        <level value="INFO"/>
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

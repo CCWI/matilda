@@ -1,0 +1,149 @@
+recommendation:
+  system_prompt: |
+    You are a Machine-Learning Advisor To Identify Library-related Decision Alternatives.
+
+    As an expert on technology alternatives, your primary purpose is to help software developers make 
+    informed decisions about frameworks and technologies. You provide expert guidance on:
+
+    1. Technology selection and comparison. For now only focus on those 4 categories:
+       - Databases (SQL, NoSQL, in-memory, etc.)
+       - Application servers and containers
+       - UI frameworks and libraries
+       - Messaging systems and event streaming platforms
+       (All other information the user provides, like infrastructure, programming languages, etc. are for now not relevant for your recommendations.)
+    2. Migration paths between technologies
+    3. Best practices for implementing specific libraries
+    4. Technical architecture recommendations
+
+    Focus on being:
+    - Concise and direct
+    - Technically accurate
+    - Practical in your recommendations
+    - Unbiased in your technology assessments
+
+    Base your recommendations on technical merit, community support, 
+    and contextual needs, not on personal preferences. When you don't know something, 
+    acknowledge it clearly rather than providing speculative information.
+    Please always answer in german and list at least 10 recommendations per query if possible, but maximum 10.
+
+  prompt_uc1: |
+    Wir nutzen aktuell H2 fürs Usermanagement und Glassfish als App-Server.
+    Wir müssen beides ersetzen: H2 durch eine produktionsreife DB und Glassfish durch eine populäre, moderne Open-Source-Alternative. Die App ist noch in einer frühen Phase (unveröffentlichte Alpha-Version), soll später ca. 2000 gleichzeitige Nutzer unterstützen und muss DSGVO-konform sein.
+    Kannst du mir helfen, die besten Optionen für Datenbank und App-Server zu finden und zu vergleichen?
+    Performance, Skalierbarkeit, Kosten und Wartbarkeit sind uns wichtig. 
+    Was passt gut, besonders da wir noch am Anfang stehen? Und worauf muss ich bei der Kombination achten?
+
+  prompt_matilda_enrichment: |
+    Für bessere Empfehlungen berücksichtigen Sie bitte Folgendes:
+    Basierend auf einer Analyse von Technologiemigrationen in öffentlichen Git-Repositories der letzten 10 Jahren wurde das folgende Ranking für Technologiemigrationen nach Häufigkeit erstellt:
+
+    {{ matilda_ranking }}
+    
+    Bitte verwende dieses Ranking in der exakten Reihenfolge, um eine fundierte und vielfältige Auswahl an Empfehlungen zu geben.
+
+  # prompt_uc2: |
+  #   Ich brauche konkrete Vorschläge für die Cloud-Migration unserer Supply-Chain-Anwendung. 
+  #   Diese ist 12 Jahre alt (Oracle DB, Java-Backend auf JBoss 6, JavaFX-Client), läuft on-premise, macht Probleme (Performance, Wartung) und soll in die Cloud.
+  #   Wir müssen uns entscheiden, WOHIN und WIE wir migrieren. Die Anwendung ist kritisch. Kannst du mir helfen, die passenden Technologien zu finden?
+  #   Welche spezifischen Datenbanken- und App-Server/Container-Technologien eignen sich für so eine Java-Anwendung in der Cloud? 
+  #   Wenn wir modernisieren (nicht nur rehosten): Welche Technologien wären gute Nachfolger für den alten JBoss 6 und die Oracle DB?
+
+  #   Ganz wichtig: Welche Technologien/Services helfen uns dabei, die Daten innerhalb der EU zu halten und Compliance-Anforderungen zu erfüllen?
+  #   Ich brauche eine Übersicht mit konkreten Technologie-Optionen und einer Bewertung, damit wir eine fundierte Entscheidung treffen können. Danke!
+
+# FUNKTIONIERT SO NICHT WEIL KEINE MATILDA-TREFFER
+  # prompt_uc2_all_tech: |
+  #   Ich brauche konkrete Technologie-Vorschläge für die Modernisierung unserer Supply-Chain-Anwendung.
+  #   Die Basis: 12 Jahre alte Java-Anwendung (JBoss 6, Oracle DB, TIBCO EMS für Messaging, Apache Pivot Client). Das System läuft on-premise, ist langsam, unsicher und teuer (Wartung, Lizenzen).
+  #   Wir wollen nicht nur per "Lift-and-Shift" in die Cloud, sondern gezielt modernisieren. Was sind die besten technologischen Nachfolger für: JBoss 6, Oracle DB, TIBCO EMS
+  #   Ganz wichtig: Wie stellen wir sicher, dass alle Daten und Services die DSGVO-Anforderungen erfüllen und in der EU bleiben?
+  #   Ich benötige eine strukturierte Übersicht mit bewerteten Optionen als fundierte Entscheidungsgrundlage. Danke
+
+  prompt_uc2: |
+    Ich brauche konkrete Vorschläge für die Cloud-Migration unserer Supply-Chain-Anwendung. 
+    Diese ist 12 Jahre alt und setzt auf Oracle DB, WildFly, Apache ActiveMQ, läuft on-premise, macht Probleme (Performance, Wartung) und soll in die Cloud.
+    Wir müssen uns entscheiden, WOHIN und WIE wir migrieren. Die Anwendung ist kritisch. Kannst du mir helfen, passende Technologien zu finden?
+    Wenn wir modernisieren (nicht nur rehosten): Welche spezifischen Datenbanken- Messaging- und App-Server/Container-Technologien eignen sich für so eine Java-Anwendung in der Cloud als mögliche Alternativen für Oracle DB, WildFly und Apache ActiveMQ? 
+
+    Wichtiger Aspekt: Die Technologien sollen uns dabei helfen, die Daten innerhalb der EU zu halten und Compliance-Anforderungen zu erfüllen.
+
+
+# TIBCO Enterprise Message Service
+# IBM MQ
+# Other technologies in same category: ['Apache ActiveMQ / ServiceMix', 'Apache Pulsar', 'ZeroMQ', 'Apache Spark Streaming', 'Azure Servicebus / Eventhubs', 'RocketMQ', 'RabbitMQ / CloudAMQP', 'Apache TubeMQ', 'Apache Kafka', 'Apache Flume', 'NATS', 'WSO2 Message Broker', 'Apache Flink', 'Apache Storm', 'Apache Samza', 'Mule ESB', 'IBM MQ', 'Google Cloud PubSub', 'IronMQ', 'Solace PubSub+', 'Apache ActiveMQ Artemis / HornetQ', 'Redis / Disque / RSMQ', 'NSQ', 'TIBCO Enterprise Message Service', 'Kestrel', 'JORAM', 'Amazon Kinesis (Kinesis Streams)', 'Apache ActiveMQ Apollo', 'Open Message Queue']
+
+  prompt_uc3: |
+    Hallo, wir müssen unser B2B E-Procurement-Portal modernisieren (ist ein älterer Spring-Monolith). Die Hauptbaustellen sind:
+
+    1.  **TIBCO EMS:** Ist alt, teuer und macht bei modernen Integrationen Probleme. Was sind gute, moderne Messaging-Alternativen, die Skalierbarkeit, Zuverlässigkeit und Kosten berücksichtigen? Gibt's Tipps für die Migration weg von EMS?
+
+    2.  **Apache Pivot (UI):** Die UI ist veraltet, die UX nicht optimal, und neue Features zu entwickeln dauert ewig. Welche modernen UI-Technologien passen für eine komplexe B2B-Anwendung, 
+        bei der uns gute UX, Entwicklungsgeschwindigkeit und Wartbarkeit wichtig sind? Wie können wir die UI schrittweise umstellen?
+
+    Außerdem: Wie können diese Änderungen unsere Gesamtarchitektur verbessern (vielleicht in Richtung Services)? Und was wäre eine vernünftige Migrationsstrategie für das Ganze?
+    Wir suchen umsetzbare Ratschläge und Best Practices. Danke!
+
+extraction:
+  relevant_technologies: |
+    Please analyze the following text and extract a list of 
+    technology names (databases, application servers, ui frameworks, messaging systems)
+    which the user is currently using and for which the user is looking for recommendations to replace.
+    
+    Focus only on the specific technologies mentioned or implied in the text for which 
+    implied in the text and for which recommendations are needed. If no specific 
+    technologies are mentioned, try to infer based on the context what kind of 
+    type of technologies the user is looking for.
+    
+    Example 1: "I want to migrate from MySQL to a more powerful database" -> [“MySQL”].
+    Example 2: "Which framework is better for web development, React or Angular?" -> [“React”, “Angular”]
+    Example 3: "I need a new database for my application. At the moment, I am using MySQL." -> [“MySQL”]
+    Example 4: "I am looking for a new application server to replace my old one." -> [""]
+    Example 5: "I am looking for a new application server to replace my old one. Currently, I am using JBoss." -> ["JBoss"]
+    Example 6: "I use Oracle DB, Postgres, Jboss 6.2 und ActiveMQ" -> ["Oracle", "PostgreSQL", "WildFly", "Apache ActiveMQ / ServiceMix"]
+
+    Important:
+    1. Return only the list of technologies, without further explanation.
+    2. Extract only the specific, named technologies (like product names or vendors) currently in use and
+    do not include general technology categories (like 'database', 'app server') unless they are part of a specific product name.
+    3. Please only return technologies which match the following technology names and make sure to only return the names from the list below exactly as they are provided:
+
+    ['SQLite' 'Memcached' 'Google Cloud Spanner' 'Jetty'
+    'Jakarta Server Faces (JSF) / PrimeFaces / RichFaces / PrettyFaces / MyFaces / JoinFaces / ICEfaces'
+    'Apache TomEE' 'Undertow' 'LibGDX (based on OpenGL)' 'SwingX'
+    'Apache ActiveMQ / ServiceMix' 'PostgreSQL' 'Apache Pulsar'
+    'Apache Tomcat' 'ZeroMQ' 'Apache Spark Streaming' 'Zkoss ZK'
+    'Google Web Toolkit (GWT)' 'Vaadin' 'ArangoDB' 'Neo4j'
+    'Azure Servicebus / Eventhubs' 'RocketMQ' 'Apache Cocoon'
+    'RabbitMQ / CloudAMQP' 'Oracle' 'JavaFX' 'Apache TubeMQ' 'RocksDB' 'Hive'
+    'Apache Kafka' 'Apache Flume' 'LevelDB' 'Apache Wicket' 'RDF4J' 'NATS'
+    'MySQL' 'WSO2 Message Broker' 'Presto' 'Elasticsearch' 'Elide'
+    'Abstract Window Toolkit (AWT)' 'Apache Flink' 'Greenplum' 'Accumulo'
+    'RethinkDB' 'Apache Phoenix' 'Teradata' 'Apache Geronimo' 'JOnAS'
+    'Informix' 'Titan' 'Apache Storm' 'MariaDB' 'Apache Samza'
+    'Google Cloud Bigtable' 'Glassfish' 'AngularJS / Angular' 'Ignite'
+    'Jakarta Server Pages (JSP)' 'Mule ESB' 'SAP HANA' 'Solr' 'Swing'
+    'Apache Mina' 'IBM MQ' 'Snowflake' 'InfluxDB' 'Scala.js' 'DynamoDB'
+    'Polymer' 'Google Cloud PubSub' 'Couchbase' 'Firebird' 'Netty' 'IronMQ'
+    'Payara' 'OrientDB' 'Microsoft SQL Server' 'Hazelcast' 'Redis'
+    'Solace PubSub+' 'Struts' 'InterSystems Caché' 'Amazon Redshift' 'Realm'
+    'Apache ActiveMQ Artemis / HornetQ' 'Apache Jena' 'Redis / Disque / RSMQ'
+    'H2' 'Lightweight Java Game Library (LWJGL)' 'Vue.js' 'Remote Application Platform (RAP)' 
+    'Resin' 'JOGL (Java™ Binding for the OpenGL)' 'Cassandra' 'Standard Widget Toolkit (SWT)' 
+    'MongoDB' 'NSQ' 'Impala' 'Apache Drill' 'TIBCO Enterprise Message Service' 'HerdDB'
+    'Grails Groovy Servers Pages (GSP)' 'Scalatra' 'Kestrel' 'Lift' 'JORAM'
+    'NanoHttpd' 'Infinispan' 'MapDB' 'Apache IoTDB' 'HBase' 'Tarantool'
+    'WebObjects' 'WildFly' 'Apache Click' 'Thymeleaf' 'Pivotal GemFire'
+    'WebSphere Liberty / Open Liberty' 'Microsoft Azure Storage' 'ClickHouse'
+    'JGoodies' 'Cubrid' 'Amazon Kinesis (Kinesis Streams)'
+    'Google Cloud Datastore' 'Apache ActiveMQ Apollo' 'Etcd' 'Riak' 'OpenUI5'
+    'React.js' 'Open Message Queue' 'Derby' 'HyperSQL' 'Apache Pivot'
+    'IBM Db2' 'Google Cloud Storage' 'Azure Blob Storage' 'MonetDB' 'Lit' 'Sphinx']
+
+    CRITICAL:
+    Do never return a technology which is not in the list above and use the exact names provided!
+
+    Text to extract technologies from: 
+    {query}
+
+    Format instructions:
+    {format_instructions}

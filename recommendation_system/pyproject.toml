@@ -1,0 +1,71 @@
+[tool.poetry]
+name = "recomsystem"
+version = "0.0.1"
+description = "Promotion - Recommendation System"
+authors = ["Auch, Maximilian <maximilian.auch@hm.edu>"]
+
+[tool.poetry.dependencies]
+python = "3.12.*"
+python-dotenv = "^1.0.1"
+langchain-anthropic = "^0.3.12"
+langchain-core = "^0.3.56"
+langchain-community = "^0.3.23"
+langchain-google-vertexai = "^2.0.21"
+langchain-mistralai = "^0.2.10"
+pydantic = "2.11.5"
+pydantic-core = "2.33.2"
+openai = "^1.76.2"
+pandas = "^2.2.3"
+numpy = "^1.26.4"
+google-auth = "^2.39.0"
+fastapi = "^0.115.9"
+uvicorn = "^0.30.1"
+gradio = "^5.23.3"
+neo4j = "^5.28.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.8"
+ipython = "^9.2.0"
+jupyter = "^1.1.1"
+ipykernel = "^6.29.5"
+
+[tool.ruff]
+line-length = 140
+indent-width = 4
+
+extend-include = ["*.ipynb"]
+exclude = ["data", "docs"]
+
+[tool.ruff.lint]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # PyFlakes
+    "B",      # flake8-bugbear
+    "I",      # isort
+    "RUF100", # "noqa" rule ignore validation
+]
+
+ignore = [
+    "E501", # line too long, handled by black
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

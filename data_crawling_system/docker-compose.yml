@@ -1,0 +1,379 @@
+#version: '3'
+services:
+
+########################
+####### Postgres #######
+########################
+
+  postgres:
+    image: postgres:13.5
+    container_name: postgres
+    volumes:
+      - /opt/matilda/postgresql/data:/var/lib/postgresql/data
+    command: postgres -c 'max_connections=200'
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      - POSTGRES_USER=max
+      - POSTGRES_PASSWORD=50Ananas!
+      - POSTGRES_DB=matilda
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin4
+    depends_on:
+      - postgres
+    ports:
+      - "127.0.0.1:5454:5454"
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=maximilian.auch@hm.edu
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+      - PGADMIN_LISTEN_PORT=5454
+
+
+########################
+######## MongoDB #######
+########################
+
+  mongo:
+    image: mongo:latest
+    hostname: mongo
+    container_name: mongo
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - /opt/matilda/mongo/data:/data/db
+    restart: always
+    networks:
+      - backend
+    #environment:
+      #MONGO_INITDB_ROOT_USERNAME: admin
+      #MONGO_INITDB_ROOT_PASSWORD: admin
+
+
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "127.0.0.1:8091:8081"
+    restart: always
+    links:
+      - mongo
+    networks:
+      - backend
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+
+########################
+######## Kafka #########
+########################
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    restart: unless-stopped
+    volumes:
+      - /opt/matilda/zookeeper/data:/var/lib/zookeeper/data
+      - /opt/matilda/zookeeper/log:/var/lib/zookeeper/log
+    networks:
+      - backend
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+
+  kafka-broker:
+    image: confluentinc/cp-server:7.3.1
+    hostname: kafka-broker
+    container_name: kafka-broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+      - "19092:19092"
+    restart: unless-stopped
+    volumes:
+      - /opt/matilda/kafka/data:/var/lib/kafka/data/
+    networks:
+      - backend
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker:9092,CONNECTIONS_FROM_HOST://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka-broker:9092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.3.1
+    hostname: control-center
+    container_name: control-center
+    depends_on:
+      - kafka-broker
+      #- schema-registry
+      #- connect
+      #- ksqldb-server
+    ports:
+      - "127.0.0.1:9021:9021"
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka-broker:9092'
+      CONTROL_CENTER_CONNECT_CLUSTER: 'connect:8083'
+      CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8088"
+      CONTROL_CENTER_KSQL_KSQLDB1_ADVERTISED_URL: "http://localhost:8088"
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+
+
+##########################
+######## MATILDA #########
+##########################
+
+  matilda-libsim-ki:
+    container_name: matilda-libsim-ki
+    build:
+      context: matilda-korpus-libsim-ki
+      dockerfile: Dockerfile
+    image: matilda-libsim-ki
+    ports:
+      - "127.0.0.1:8500:5000"
+    volumes:
+      - /opt/matilda/matilda-libsim-ki/logs:/var/tmp/logs
+    networks:
+      - backend
+
+  matilda-discovery:
+    container_name: matilda-discovery
+    build:
+      context: matilda-discovery
+      dockerfile: Dockerfile
+    image: matilda-discovery
+    ports:
+      - "127.0.0.1:8761:8761"
+    volumes:
+      - /opt/matilda/matilda-discovery/logs:/var/tmp/logs
+      - /opt/matilda/discovery:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+
+  matilda-crawler:
+    container_name: matilda-crawler
+    build:
+      context: matilda-crawler
+      dockerfile: Dockerfile    
+    image: matilda-crawler
+    ports:
+      - "127.0.0.1:8082:8082"
+    depends_on:
+      - matilda-discovery
+      - matilda-state
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-crawler/logs:/var/tmp/logs
+      - /opt/matilda/crawling:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+  matilda-crawler2:
+    container_name: matilda-crawler2
+    build:
+      context: matilda-crawler
+      dockerfile: Dockerfile
+    image: matilda-crawler
+    ports:
+      - "127.0.0.1:8182:8182"
+    depends_on:
+      - matilda-discovery
+      - matilda-state
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-crawler/logs:/var/tmp/logs
+      - /opt/matilda/crawling:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+  matilda-dataextractor:
+    container_name: matilda-dataextractor
+    build:
+      context: matilda-dataextractor
+      dockerfile: Dockerfile    
+    image: matilda-dataextractor
+    depends_on:
+      - matilda-discovery
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-dataextractor/logs:/var/tmp/logs
+      - /opt/matilda/crawling:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+  matilda-dataextractor2:
+    container_name: matilda-dataextractor2
+    build:
+      context: matilda-dataextractor
+      dockerfile: Dockerfile
+    image: matilda-dataextractor
+    depends_on:
+      - matilda-discovery
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-dataextractor/logs:/var/tmp/logs
+      - /opt/matilda/crawling:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+  matilda-dataextractor3:
+    container_name: matilda-dataextractor3
+    build:
+      context: matilda-dataextractor
+      dockerfile: Dockerfile
+    image: matilda-dataextractor
+    depends_on:
+      - matilda-discovery
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-dataextractor/logs:/var/tmp/logs
+      - /opt/matilda/crawling:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+  matilda-dataextractor4:
+    container_name: matilda-dataextractor4
+    build:
+      context: matilda-dataextractor
+      dockerfile: Dockerfile
+    image: matilda-dataextractor
+    depends_on:
+      - matilda-discovery
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-dataextractor/logs:/var/tmp/logs
+      - /opt/matilda/crawling:/home/max/matilda-test3-repos/crawled
+    networks:
+      - backend
+
+  matilda-analyzer:
+    container_name: matilda-analyzer
+    build:
+      context: matilda-analyzer
+      dockerfile: Dockerfile    
+    image: matilda-analyzer
+    links:
+      - postgres
+    ports:
+      - "127.0.0.1:8084:8084"
+    depends_on:
+      - postgres
+      - matilda-discovery
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-analyzer/logs:/var/tmp/logs
+    networks:
+      - backend
+
+  matilda-analyzer2:
+    container_name: matilda-analyzer2
+    build:
+      context: matilda-analyzer
+      dockerfile: Dockerfile
+    image: matilda-analyzer
+    links:
+      - postgres
+    depends_on:
+      - postgres
+      - matilda-discovery
+      - matilda-libsim-ki
+      - mongo
+      - kafka-broker
+    volumes:
+      - /opt/matilda/matilda-analyzer/logs:/var/tmp/logs
+    networks:
+      - backend
+
+
+  matilda-state:
+    container_name: matilda-state
+    build:
+      context: matilda-state
+      dockerfile: Dockerfile
+    image: matilda-state
+    ports:
+      - "127.0.0.1:8086:8086"
+    depends_on:
+      - postgres
+      - matilda-discovery
+    volumes:
+      - /opt/matilda/matilda-state/logs:/var/tmp/logs
+    networks:
+      - backend
+
+  matilda-gateway:
+    container_name: matilda-gateway
+    build:
+      context: matilda-gateway
+      dockerfile: Dockerfile
+    image: matilda-gateway
+    ports:
+      - "127.0.0.1:8081:8081"
+    depends_on:
+      - matilda-discovery
+    volumes:
+      - /opt/matilda/matilda-gateway/logs:/var/tmp/logs
+    networks:
+      - backend
+
+  matilda-ui:
+    container_name: matilda-ui
+    build:
+      context: matilda-ui
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8080:80"
+
+networks:
+  backend:
+    driver: bridge
+
+
